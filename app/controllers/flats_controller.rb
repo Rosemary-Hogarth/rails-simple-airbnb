@@ -1,7 +1,12 @@
 class FlatsController < ApplicationController
 
   def index
-    @flats = Flat.all
+    if params[:query].present?
+      @query = params[:query]
+      @flats = Flat.where("name LIKE ?", "%#{params[:query]}%")
+    else
+      @flats = Flat.all
+    end
   end
 
   def show
@@ -15,7 +20,7 @@ class FlatsController < ApplicationController
   def create
     @flat = Flat.new(flat_params)
     if @flat.save
-      redirect_to flats_path(@flat)
+      redirect_to flats_path
     else
       render :new, status: :unprocessable_entity
     end
@@ -27,8 +32,11 @@ class FlatsController < ApplicationController
 
   def update
     @flat = Flat.find(params[:id])
-    @flat.update(flat_params)
-    redirect_to flat_path(@flat)
+    if @flat.update(flat_params)
+      redirect_to flat_path(@flat)
+    else
+      render :new, status: :unprocessable_entity
+    end
   end
 
   def destroy
@@ -40,6 +48,6 @@ class FlatsController < ApplicationController
   private
 
   def flat_params
-    params.require(:flat).permit(:name, :address, :description, :price_per_night, :number_of_guests)
+    params.require(:flat).permit(:name, :address, :description, :price_per_night, :number_of_guests, :picture_url)
   end
 end
